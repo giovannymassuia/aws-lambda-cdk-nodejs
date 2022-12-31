@@ -1,0 +1,11 @@
+type Query {
+  getNotes: [Note] @aws_api_key @aws_lambda
+}
+
+type Note @aws_api_key @aws_lambda {
+  content: String!
+}
+
+schema {
+  query: Query
+}
