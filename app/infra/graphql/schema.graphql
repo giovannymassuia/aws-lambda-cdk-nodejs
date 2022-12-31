@@ -1,8 +1,8 @@
 type Query {
-  getNotes: [Note] @aws_api_key @aws_lambda
+  getNotes: [Note]
 }
 
-type Note @aws_api_key @aws_lambda {
+type Note {
   content: String!
 }
 

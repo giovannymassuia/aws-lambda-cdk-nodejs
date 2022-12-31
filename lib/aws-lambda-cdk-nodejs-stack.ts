@@ -33,10 +33,32 @@ export class AwsLambdaCdkNodejsStack extends cdk.Stack {
       description: "This service serves notes.",
     });
 
+    // rest api gateway cognito authorizer
+    const cognitoAuthorizer = new cdk.aws_apigateway.CognitoUserPoolsAuthorizer(
+      this,
+      "cognitoAuthorizer",
+      {
+        cognitoUserPools: [
+          cdk.aws_cognito.UserPool.fromUserPoolId(this, "userPool", "---"),
+        ],
+      }
+    );
+
     const notes = notesApi.root.addResource("notes");
     notes.addMethod(
       "GET",
-      new cdk.aws_apigateway.LambdaIntegration(getNotesFunction)
+      new cdk.aws_apigateway.LambdaIntegration(getNotesFunction),
+      {
+        authorizer: cognitoAuthorizer,
+        authorizationType: cdk.aws_apigateway.AuthorizationType.COGNITO,
+        authorizationScopes: [
+          "aws.cognito.signin.user.admin",
+          "phone",
+          "openid",
+          "profile",
+          "email",
+        ],
+      }
     );
 
     const addNote = notes.addResource("{dayId}");
@@ -65,12 +87,29 @@ export class AwsLambdaCdkNodejsStack extends cdk.Stack {
       }
     );
 
+    // aws lambda authorizer
+    // const api = new cdk.aws_appsync.CfnGraphQLApi(this, "Api", {
+    //   authenticationType: "AWS_LAMBDA",
+    //   name: "notes-api",
+    //   lambdaAuthorizerConfig: {
+    //     authorizerResultTtlInSeconds: 5,
+    //     authorizerUri: authGraphqlFunction.functionArn,
+    //   },
+    //   additionalAuthenticationProviders: [
+    //     {
+    //       authenticationType: "API_KEY",
+    //     },
+    //   ],
+    // });
+
+    // aws cognito user pools authorizer
     const api = new cdk.aws_appsync.CfnGraphQLApi(this, "Api", {
-      authenticationType: "AWS_LAMBDA",
+      authenticationType: "AMAZON_COGNITO_USER_POOLS",
       name: "notes-api",
-      lambdaAuthorizerConfig: {
-        authorizerResultTtlInSeconds: 5,
-        authorizerUri: authGraphqlFunction.functionArn,
+      userPoolConfig: {
+        awsRegion: "us-east-1",
+        defaultAction: "ALLOW",
+        userPoolId: "---",
       },
       additionalAuthenticationProviders: [
         {

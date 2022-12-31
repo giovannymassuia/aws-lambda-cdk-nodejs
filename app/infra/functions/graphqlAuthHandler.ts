@@ -19,7 +19,7 @@ export const handler: AppSyncAuthorizerHandler<{
 
   // Verifier that expects valid access tokens:
   const verifier = CognitoJwtVerifier.create({
-    userPoolId: "--",
+    userPoolId: "---",
     tokenUse: "access",
     clientId: "--",
   });
